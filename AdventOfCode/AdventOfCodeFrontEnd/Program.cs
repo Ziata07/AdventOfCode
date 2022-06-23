@@ -10,112 +10,153 @@ using System.Linq;
 namespace AdventOfCodeFrontEnd
 {
 	class Program
-	{
+	{//program is taking LONG to calculate. Does it instantly if only mode OR nonMode is not commented out. Figure it out
 		static void Main(string[] args)
 		{
 			#region Initiate Variables 
-			List<char> firstBit = new List<char>(); //could have made a list of lists or a class of lists?
-			List<char> secondBit = new List<char>();
-			List<char> thirdBit = new List<char>();
-			List<char> fourthBit = new List<char>();
-			List<char> fifthBit = new List<char>();
-
-			List<char> sixthBit = new List<char>();
-			List<char> seventhBit = new List<char>();
-			List<char> eightBit = new List<char>();
-			List<char> ninthBit = new List<char>();
-			List<char> tenthBit = new List<char>();
-
-			List<char> eleventhBit = new List<char>();
-			List<char> twelthBit = new List<char>();
+			List<List<char>> mainList = new List<List<char>>();
+			List<char> modeList = new List<char>();
+			List<char> notModeList = new List<char>();
+			int zeroCount = 0;
+			int oneCount = 0;
 
 			string line;
-			char[] charArray;
+			char[] modeArray, notModeArray;
 			#endregion
+
+			CreateSubLists();
 			StreamReader binaryNumFile = new StreamReader(@"F:\LearningProgramming\LearningCSharp\AdventOfCode_Day3\BinaryNumbers.txt");
 
 			using (binaryNumFile)
-			{//open the document, put each line in an array then assign each slot in array to appropriate list
-				while ((line = binaryNumFile.ReadLine()) != null)
-				{
-					charArray = line.ToCharArray(); //lots of code, go back and condense this if I want to
-					CollectBitsToList(charArray, firstBit, secondBit, thirdBit, fourthBit, fifthBit, sixthBit, seventhBit
-						, eightBit, ninthBit, tenthBit,eleventhBit, twelthBit);
-				}
-
-				char[] modeArray = {GetModes(firstBit), GetModes(secondBit), GetModes(thirdBit), GetModes(fourthBit)
-						,GetModes(fifthBit), GetModes(sixthBit), GetModes(seventhBit), GetModes(eightBit), GetModes(ninthBit)
-						,GetModes(tenthBit), GetModes(eleventhBit), GetModes(twelthBit)};
-
-				char[] notModeArray = {GetNotModes(firstBit), GetNotModes(secondBit), GetNotModes(thirdBit), GetNotModes(fourthBit)
-						,GetNotModes(fifthBit), GetNotModes(sixthBit), GetNotModes(seventhBit), GetNotModes(eightBit), GetNotModes(ninthBit)
-						,GetNotModes(tenthBit), GetNotModes(eleventhBit), GetNotModes(twelthBit)};
-
-				string modeString = new string(modeArray);//These two lines putting the arrays into strings
-				string notModeString = new string(notModeArray);
-
-				Console.WriteLine(ConvertBitsToDecimal(modeString) * ConvertBitsToDecimal(notModeString));	//multiply the converted bits for answer		
-			}
-			//a function with A LOT of parameters. Probably more readable way to do this? 
-			void CollectBitsToList(char[] bits, List<char> sone, List<char> stwo, List<char> sthree, List<char> sfour
-		   , List<char> sfive, List<char> ssix, List<char>sseven, List<char>seight, List<char>snine, List<char>sten
-		   , List<char> seleven, List<char> stwelve)
 			{
-				for (int slotCounter = 0; slotCounter < 12; slotCounter++) //could make this a function for less work here
+				Console.WriteLine("File is open!");
+				while ((line = binaryNumFile.ReadLine()) != null)
+				{					
+					modeArray = line.ToCharArray();
+					PutBitsToSubList(modeArray);
+
+					notModeArray = line.ToCharArray();				
+					PutBitsToSubList(notModeArray);
+				}				
+			}
+
+
+			
+			while (mainList[0].Count != 1)
+			{
+				DoModeCalculationinSubList();
+				DoNonModeCalculationinSubList();
+			}
+
+			double answer = ConvertBitsToDecimal(ConvertListToBitString(modeList)) * ConvertBitsToDecimal(ConvertListToBitString(notModeList));
+			Console.WriteLine("Answer is: {0}", answer);
+
+
+			void PutBitsToSubList(char[] anArray)//Number in for loop
+			{
+				for (int j = 0; j < 12; j++)
 				{
-					if (slotCounter == Array.IndexOf(bits, '0', 0, 1) | slotCounter == Array.IndexOf(bits, '1', 0, 1))
+					if (j == Array.IndexOf(anArray, '0', j, 1) | j == Array.IndexOf(anArray, '1', j, 1))
 					{
-						sone.Add(bits[slotCounter]);
-					}
-					else if (slotCounter == Array.IndexOf(bits, '0', 1, 1) | slotCounter == Array.IndexOf(bits, '1', 1, 1))
-					{
-						stwo.Add(bits[slotCounter]);
-					}
-					else if (slotCounter == Array.IndexOf(bits, '0', 2, 1) | slotCounter == Array.IndexOf(bits, '1', 2, 1))
-					{
-						sthree.Add(bits[slotCounter]);
-					}
-					else if (slotCounter == Array.IndexOf(bits, '0', 3, 1) | slotCounter == Array.IndexOf(bits, '1', 3, 1))
-					{
-						sfour.Add(bits[slotCounter]);
-					}
-					else if (slotCounter == Array.IndexOf(bits, '0', 4, 1) | slotCounter == Array.IndexOf(bits, '1', 4, 1))
-					{
-						sfive.Add(bits[slotCounter]);
-					}
-					else if (slotCounter == Array.IndexOf(bits, '0', 5, 1) | slotCounter == Array.IndexOf(bits, '1', 5, 1))
-					{
-						ssix.Add(bits[slotCounter]);
-					}
-					else if (slotCounter == Array.IndexOf(bits, '0', 6, 1) | slotCounter == Array.IndexOf(bits, '1', 6, 1))
-					{
-						sseven.Add(bits[slotCounter]);
-					}
-					else if (slotCounter == Array.IndexOf(bits, '0', 7, 1) | slotCounter == Array.IndexOf(bits, '1', 7, 1))
-					{
-						seight.Add(bits[slotCounter]);
-					}
-					else if (slotCounter == Array.IndexOf(bits, '0', 8, 1) | slotCounter == Array.IndexOf(bits, '1', 8, 1))
-					{
-						snine.Add(bits[slotCounter]);
-					}
-					else if (slotCounter == Array.IndexOf(bits, '0', 9, 1) | slotCounter == Array.IndexOf(bits, '1', 9, 1))
-					{
-						sten.Add(bits[slotCounter]);
-					}
-					else if (slotCounter == Array.IndexOf(bits, '0', 10, 1) | slotCounter == Array.IndexOf(bits, '1', 10, 1))
-					{
-						seleven.Add(bits[slotCounter]);
-					}
-					else if (slotCounter == Array.IndexOf(bits, '0', 11, 1) | slotCounter == Array.IndexOf(bits, '1', 11, 1))
-					{
-						stwelve.Add(bits[slotCounter]);
+						mainList[j].Add(anArray[j]);
 					}
 					else
 					{
 						break;
 					}
 				}
+			}
+
+			void CreateSubLists()//Number in for loop
+			{
+				for (int listTotal = 0; listTotal < 12; listTotal++)
+				{
+					mainList.Add(new List<char>());
+				}
+			}
+
+			void RemoveSlotsFromAllList(int slotPosition)
+			{//function to remove positions from all lists. Need to condense this, make a list of lists?
+				foreach (List<char> x in mainList)
+				{
+					x.RemoveAt(slotPosition);
+				}
+			}
+
+			void DoModeCalculationinSubList()
+			{
+				foreach (List<char> sList in mainList)
+				{
+					if (CheckSameAmounts(sList))
+					{
+						RemoveNonMatchingRows('1', sList);
+					}
+					else
+					{
+						RemoveNonMatchingRows(GetModes(sList), sList);
+					}
+				}
+			}
+
+			void DoNonModeCalculationinSubList()
+			{
+				foreach (List<char> sList in mainList)
+				{
+					if (CheckSameAmounts(sList))
+					{
+						RemoveNonMatchingRows('0', sList);
+					}
+					else
+					{
+						RemoveNonMatchingRows(GetNotModes(sList), sList);
+					}
+				}
+			}
+
+			void RemoveNonMatchingRows(char theMode, List<char> aList)
+			{
+				for (int i = 0; i < aList.Count; i++)//Go through the list
+				{
+					if (theMode != aList[i]) //If a slot doesn't have the mode it in
+					{
+						RemoveSlotsFromAllList(i);//remove the slots that don't match from ALL lists
+						i--;//go back one so it goes through the list again. 
+					}
+					else
+					{
+						continue;
+					}
+				}
+
+			}
+
+			bool CheckSameAmounts(List<char> x)
+			{
+				for (int i = 0; i < x.Count; i++)
+				{
+					if (x[i] == '0')
+					{
+						zeroCount++;
+					}
+					else if (x[i] == '1')
+					{
+						oneCount++;
+					}
+					else
+					{
+						break;
+					}
+				}
+				if (zeroCount == oneCount)
+				{
+					return true;
+				}
+				else
+				{
+					zeroCount = 0;
+					oneCount = 0;
+				}
+				return false;
 			}
 
 			char GetModes(List<char> x)
@@ -136,7 +177,19 @@ namespace AdventOfCodeFrontEnd
 				return anotherTest;
 			}
 
-			double  ConvertBitsToDecimal(string bitString)
+			string ConvertListToBitString(List<char> x)
+			{
+				foreach (List<char> subList in mainList)
+				{
+					foreach (char singleBit in subList)
+					{
+						x.Add(singleBit);
+					}
+				}
+				return new string(x.ToArray());
+			}
+
+			double ConvertBitsToDecimal(string bitString)
 			{
 				double binary = double.Parse(bitString);//had to make this a double because num was "too big/small for int32 parse
 
