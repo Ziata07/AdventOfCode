@@ -1,6 +1,6 @@
 ﻿using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 /* To handle this problem, I went about it the following way
  * 1. Grab each char of each line and put them in it's own list according to it's position on the string.
@@ -10,11 +10,11 @@ using System.Linq;
 namespace AdventOfCodeFrontEnd
 {
 	class Program
-	{//program is taking LONG to calculate. Does it instantly if only mode OR nonMode is not commented out. Figure it out
+	{
 		static void Main(string[] args)
 		{
 			#region Initiate Variables 
-			List<List<char>> mainList = new List<List<char>>();
+			List<List<char>> mainModeList = new List<List<char>>();
 			List<char> modeList = new List<char>();
 			List<char> notModeList = new List<char>();
 			int zeroCount = 0;
@@ -26,31 +26,48 @@ namespace AdventOfCodeFrontEnd
 
 			CreateSubLists();
 			StreamReader binaryNumFile = new StreamReader(@"F:\LearningProgramming\LearningCSharp\AdventOfCode_Day3\BinaryNumbers.txt");
+			StreamReader binaryNumFile_Two = new StreamReader(@"F:\LearningProgramming\LearningCSharp\AdventOfCode_Day3\BinaryNumbers.txt");
 
-			using (binaryNumFile)
-			{
-				Console.WriteLine("File is open!");
-				while ((line = binaryNumFile.ReadLine()) != null)
-				{					
-					modeArray = line.ToCharArray();
-					PutBitsToSubList(modeArray);
-
-					notModeArray = line.ToCharArray();				
-					PutBitsToSubList(notModeArray);
-				}				
-			}
-
-
-			
-			while (mainList[0].Count != 1)
-			{
-				DoModeCalculationinSubList();
-				DoNonModeCalculationinSubList();
-			}
-
-			double answer = ConvertBitsToDecimal(ConvertListToBitString(modeList)) * ConvertBitsToDecimal(ConvertListToBitString(notModeList));
+			double answer = ModeMethod() * NotModeMethod();
 			Console.WriteLine("Answer is: {0}", answer);
 
+			double ModeMethod()
+			{
+				using (binaryNumFile)
+				{
+					Console.WriteLine("File is open!");
+					while ((line = binaryNumFile.ReadLine()) != null)
+					{
+						modeArray = line.ToCharArray();
+						PutBitsToSubList(modeArray);
+					}
+				}
+
+				while (mainModeList[0].Count != 1)
+				{
+					DoModeCalculationinSubList();
+				}
+				return ConvertBitsToDecimal(ConvertListToBitString(modeList));
+			}
+
+			double NotModeMethod()
+			{
+				using (binaryNumFile_Two)
+				{
+					Console.WriteLine("File is open!");
+					while ((line = binaryNumFile_Two.ReadLine()) != null)
+					{
+						notModeArray = line.ToCharArray();
+						PutBitsToSubList(notModeArray);
+					}
+				}
+
+				while (mainModeList[0].Count != 1)
+				{
+					DoNonModeCalculationinSubList();
+				}
+				return ConvertBitsToDecimal(ConvertListToBitString(notModeList));
+			}
 
 			void PutBitsToSubList(char[] anArray)//Number in for loop
 			{
@@ -58,7 +75,7 @@ namespace AdventOfCodeFrontEnd
 				{
 					if (j == Array.IndexOf(anArray, '0', j, 1) | j == Array.IndexOf(anArray, '1', j, 1))
 					{
-						mainList[j].Add(anArray[j]);
+						mainModeList[j].Add(anArray[j]);
 					}
 					else
 					{
@@ -71,13 +88,13 @@ namespace AdventOfCodeFrontEnd
 			{
 				for (int listTotal = 0; listTotal < 12; listTotal++)
 				{
-					mainList.Add(new List<char>());
+					mainModeList.Add(new List<char>());
 				}
 			}
 
 			void RemoveSlotsFromAllList(int slotPosition)
 			{//function to remove positions from all lists. Need to condense this, make a list of lists?
-				foreach (List<char> x in mainList)
+				foreach (List<char> x in mainModeList)
 				{
 					x.RemoveAt(slotPosition);
 				}
@@ -85,7 +102,7 @@ namespace AdventOfCodeFrontEnd
 
 			void DoModeCalculationinSubList()
 			{
-				foreach (List<char> sList in mainList)
+				foreach (List<char> sList in mainModeList)
 				{
 					if (CheckSameAmounts(sList))
 					{
@@ -100,7 +117,7 @@ namespace AdventOfCodeFrontEnd
 
 			void DoNonModeCalculationinSubList()
 			{
-				foreach (List<char> sList in mainList)
+				foreach (List<char> sList in mainModeList)
 				{
 					if (CheckSameAmounts(sList))
 					{
@@ -179,7 +196,7 @@ namespace AdventOfCodeFrontEnd
 
 			string ConvertListToBitString(List<char> x)
 			{
-				foreach (List<char> subList in mainList)
+				foreach (List<char> subList in mainModeList)
 				{
 					foreach (char singleBit in subList)
 					{
